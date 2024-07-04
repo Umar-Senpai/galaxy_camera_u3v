@@ -19,6 +19,9 @@
 #include <camera_info_manager/camera_info_manager.hpp>
 
 #include "galaxy_camera_u3v/visibility_control.h"
+#include "cv_bridge/cv_bridge.h"
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 using namespace std::chrono_literals;
 
@@ -109,8 +112,8 @@ public:
     //   RCLCPP_ERROR(this->get_logger(), "error getting payload_size_: %s", error_msg);
     //   exit (-7);
     // }
-    this->declare_parameter<int64_t>("pixel_format", GX_PIXEL_FORMAT_BAYER_RG10);
-    // this->declare_parameter<int64_t>("pixel_format", GX_PIXEL_FORMAT_BAYER_RG8);
+    // this->declare_parameter<int64_t>("pixel_format", GX_PIXEL_FORMAT_BAYER_RG10);
+    this->declare_parameter<int64_t>("pixel_format", GX_PIXEL_FORMAT_BAYER_RG8);
 
     CameraDeviceInfo camera_info;
     status = GetCameraInfo(gx_dev_handle_, &camera_info);
@@ -171,10 +174,11 @@ public:
     // }
 
     // iamge encoding to publish
-    this->declare_parameter<std::string>("image_encoding", "RGB8");
+    this->declare_parameter<std::string>("image_encoding", "BGR8");
 
     // camera parameters - these are the default values. Values will be set on the camera if appropriate
     this->declare_parameter<int64_t>("acquisition_mode", GX_ACQ_MODE_CONTINUOUS);
+    this->declare_parameter<int64_t>("trigger_mode",GX_TRIGGER_MODE_OFF);
     // leader send the trigger out on line2 for the followers (hard wired)
     if (acquisition_role_.compare("leader") == 0) {
       this->declare_parameter<int64_t>("trigger_mode",GX_TRIGGER_MODE_OFF);
@@ -198,13 +202,13 @@ public:
     this->declare_parameter<int64_t>("expected_gray_value", 120);
     this->declare_parameter<double_t>("current_acquisition_frame_rate",0.0);
     this->declare_parameter<double_t>("gain",0.0); // read only - gets updated periodically
-    this->declare_parameter<int64_t>("gain_auto", GX_GAIN_AUTO_CONTINUOUS);
+    this->declare_parameter<int64_t>("gain_auto", GX_GAIN_AUTO_OFF);
     // this->declare_parameter<int64_t>("gain_auto", GX_GAIN_AUTO_OFF);
     this->declare_parameter<double_t>("auto_gain_min", 0.0); // dB
     this->declare_parameter<double_t>("auto_gain_max", 24.0); // dB
     this->declare_parameter<int64_t>("balance_ratio_selector", GX_BALANCE_RATIO_SELECTOR_RED);
     this->declare_parameter<double_t>("balance_ratio",1.0); // read only when continuous - gets updated periodically
-    this->declare_parameter<int64_t>("balance_white_auto", GX_BALANCE_WHITE_AUTO_CONTINUOUS);
+    this->declare_parameter<int64_t>("balance_white_auto", GX_BALANCE_WHITE_AUTO_ONCE);
     int roi_width=1024;
     int roi_height=768;
     this->declare_parameter<int64_t>("awb_roi_width", roi_width);
@@ -269,6 +273,8 @@ public:
 
 private:
   bool is_initialising_;
+  double last_record = 0;
+  int rec_fps = 4;
 
   std::string acquisition_role_; // camera maybe a leader or a follower
 
@@ -449,10 +455,10 @@ private:
           parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
           result = param_gx_set_enum(GX_ENUM_BALANCE_WHITE_AUTO, parameter.as_int());
       }
-      else if (parameter.get_name() == "awb_lamp_house" &&
-          parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
-          result = param_gx_set_enum(GX_ENUM_AWB_LAMP_HOUSE, parameter.as_int());
-      }
+      // else if (parameter.get_name() == "awb_lamp_house" &&
+      //     parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
+      //     result = param_gx_set_enum(GX_ENUM_AWB_LAMP_HOUSE, parameter.as_int());
+      // }
       else if (parameter.get_name() == "awb_roi_width" &&
           parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
           result = param_gx_set_int(GX_INT_AWBROI_WIDTH, parameter.as_int());
@@ -461,14 +467,14 @@ private:
           parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
           result = param_gx_set_int(GX_INT_AWBROI_HEIGHT, parameter.as_int());
       }
-      else if (parameter.get_name() == "awb_roi_offset_x" &&
-          parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
-          result = param_gx_set_int(GX_INT_AWBROI_OFFSETX, parameter.as_int());
-      }
-      else if (parameter.get_name() == "awb_roi_offset_y" &&
-          parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
-          result = param_gx_set_int(GX_INT_AWBROI_OFFSETY, parameter.as_int());
-      }
+      // else if (parameter.get_name() == "awb_roi_offset_x" &&
+      //     parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
+      //     result = param_gx_set_int(GX_INT_AWBROI_OFFSETX, parameter.as_int());
+      // }
+      // else if (parameter.get_name() == "awb_roi_offset_y" &&
+      //     parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
+      //     result = param_gx_set_int(GX_INT_AWBROI_OFFSETY, parameter.as_int());
+      // }
 
       if (!result.successful) {
         RCLCPP_WARN(this->get_logger(), "parameter %s not set - %s",parameter.get_name().c_str(), result.reason.c_str());
@@ -718,9 +724,17 @@ private:
       RCLCPP_DEBUG(get_logger(), "%s handle %p capture frame_id: %ld timestamp: %lu.%.10lu", topic.c_str(), gx_dev_handle, frame_buffer->nFrameID, uint64_t(stamp.seconds()),stamp.nanoseconds());
 
       // Initialize a shared pointer to an Image message.
-      auto msg = std::make_unique<sensor_msgs::msg::Image>();
+      auto msg = std::make_shared<sensor_msgs::msg::Image>();
       // msg->header.stamp = stamp + rclcpp::Duration(0,get_parameter("exposure_time").as_double()*1000);
       msg->header.stamp = rclcpp::Clock().now();
+      double unix_timestamp = msg->header.stamp.sec + msg->header.stamp.nanosec / 1e9;
+      double now_nanosec = msg->header.stamp.sec * 1e9 + msg->header.stamp.nanosec;
+      std::time_t time_t_timestamp = static_cast<std::time_t>(unix_timestamp);
+      double fractional_seconds = unix_timestamp - static_cast<double>(time_t_timestamp);
+      std::ostringstream timestamp_stream;
+      timestamp_stream << std::put_time(std::localtime(&time_t_timestamp), "%Y-%m-%d_%H_%M_%S");
+      int milliseconds = static_cast<int>(fractional_seconds * 1000);
+      timestamp_stream << "." << std::setfill('0') << std::setw(3) << milliseconds;
       if (!trigger_source_.empty()) {
         msg->header.frame_id = trigger_source_;
       } else {
@@ -736,6 +750,14 @@ private:
 
         size_t msg_size = frame_buffer->nHeight * frame_buffer->nWidth * 3;
         msg->encoding = sensor_msgs::image_encodings::RGB8;
+        msg->step = frame_buffer->nWidth*3;
+        msg->data.resize(msg_size);
+        memcpy(&msg->data[0],RGB_image_buf,msg_size);
+      } else if (image_encoding_ == "BGR8") {
+        // convert image to BGR8
+        PixelFormatConvert(frame_buffer, GX_COLOR_FILTER_BAYER_BG, RGB_image_buf);
+        size_t msg_size = frame_buffer->nHeight * frame_buffer->nWidth * 3;
+        msg->encoding = sensor_msgs::image_encodings::BGR8;
         msg->step = frame_buffer->nWidth*3;
         msg->data.resize(msg_size);
         memcpy(&msg->data[0],RGB_image_buf,msg_size);
@@ -769,6 +791,15 @@ private:
       // RCLCPP_INFO(get_logger(), "trigger_timestamp: %ld msg->header.stamp: %d.%d",
       //     trigger_timestamp_.nanoseconds(),
       //     msg_stamp.sec, msg_stamp.nanosec);
+      RCLCPP_INFO(get_logger(), "last_record: %lf now_nanosec: %lf greater than: %lf",
+          last_record,
+          now_nanosec, (1e9 / rec_fps));
+      if ((now_nanosec - last_record) > (1e9 / rec_fps)) {
+        std::string file_path = "/home/umar/ws/galaxy_video/" + timestamp_stream.str() + ".jpg";
+        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+        cv::imwrite(file_path, cv_ptr->image);
+        last_record = now_nanosec;
+      }
       pub_.publish(*std::move(msg),camera_info_);
     }
 
