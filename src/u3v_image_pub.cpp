@@ -233,7 +233,8 @@ public:
     this->image_buf_ = new u_char[this->payload_size_];
 
     // publishers
-    pub_ = image_transport::create_camera_publisher(this, topic_+"/image_raw", qos.get_rmw_qos_profile());
+    rmw_qos_profile_t image_qos = rmw_qos_profile_sensor_data;
+    pub_ = image_transport::create_camera_publisher(this, topic_+"/image_raw/resized_stream", image_qos);
 
     // initialise are start the timer to work out the frames per second)
     auto start_time = std::chrono::steady_clock::now();
@@ -795,7 +796,7 @@ private:
           last_record,
           now_nanosec, (1e9 / rec_fps));
       if ((now_nanosec - last_record) > (1e9 / rec_fps)) {
-        std::string file_path = "/home/umar/ws/galaxy_video/" + timestamp_stream.str() + ".jpg";
+        std::string file_path = "/ws/galaxy_video/" + timestamp_stream.str() + ".jpg";
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
         cv::imwrite(file_path, cv_ptr->image);
         last_record = now_nanosec;
