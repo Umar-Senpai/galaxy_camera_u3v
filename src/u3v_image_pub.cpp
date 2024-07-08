@@ -792,10 +792,9 @@ private:
       // RCLCPP_INFO(get_logger(), "trigger_timestamp: %ld msg->header.stamp: %d.%d",
       //     trigger_timestamp_.nanoseconds(),
       //     msg_stamp.sec, msg_stamp.nanosec);
-      double gx_value = 0.0;
-      GXGetFloat(&this->gx_dev_handle_, GX_FLOAT_EXPOSURE_TIME, &gx_value);
-      RCLCPP_INFO(get_logger(), "GALAXY EXPOSURE TIME: %lf",
-          gx_value);
+      // RCLCPP_INFO(get_logger(), "last_record: %lf now_nanosec: %lf greater than: %lf",
+      //     last_record,
+      //     now_nanosec, (1e9 / rec_fps));
       if ((now_nanosec - last_record) > (1e9 / rec_fps)) {
         std::string file_path = "/ws/galaxy_video/" + timestamp_stream.str() + ".jpg";
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
