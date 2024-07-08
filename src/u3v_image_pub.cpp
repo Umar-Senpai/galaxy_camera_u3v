@@ -199,7 +199,7 @@ public:
     this->declare_parameter<int64_t>("exposure_auto", GX_EXPOSURE_AUTO_CONTINUOUS);
     this->declare_parameter<int64_t>("exposure_mode", GX_EXPOSURE_MODE_TIMED);
     this->declare_parameter<double_t>("exposure_time", 100000.0);
-    this->declare_parameter<int64_t>("expected_gray_value", 120);
+    this->declare_parameter<int64_t>("expected_gray_value", 70);
     this->declare_parameter<double_t>("current_acquisition_frame_rate",0.0);
     this->declare_parameter<double_t>("gain",0.0); // read only - gets updated periodically
     this->declare_parameter<int64_t>("gain_auto", GX_GAIN_AUTO_OFF);
@@ -792,9 +792,10 @@ private:
       // RCLCPP_INFO(get_logger(), "trigger_timestamp: %ld msg->header.stamp: %d.%d",
       //     trigger_timestamp_.nanoseconds(),
       //     msg_stamp.sec, msg_stamp.nanosec);
-      RCLCPP_INFO(get_logger(), "last_record: %lf now_nanosec: %lf greater than: %lf",
-          last_record,
-          now_nanosec, (1e9 / rec_fps));
+      double gx_value = 0.0;
+      GXGetFloat(&this->gx_dev_handle_, GX_FLOAT_EXPOSURE_TIME, &gx_value);
+      RCLCPP_INFO(get_logger(), "GALAXY EXPOSURE TIME: %lf",
+          gx_value);
       if ((now_nanosec - last_record) > (1e9 / rec_fps)) {
         std::string file_path = "/ws/galaxy_video/" + timestamp_stream.str() + ".jpg";
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
