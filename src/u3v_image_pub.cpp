@@ -570,7 +570,7 @@ private:
     update_changed_float_param("balance_ratio", GX_FLOAT_BALANCE_RATIO);
     update_changed_enum_param("balance_white_auto", GX_ENUM_BALANCE_WHITE_AUTO);
     update_changed_enum_param("awb_lamp_house", GX_ENUM_AWB_LAMP_HOUSE);
-    update_changed_enum_param("gamma_enable", GX_BOOL_GAMMA_ENABLE);
+    update_changed_bool_param("gamma_enable", GX_BOOL_GAMMA_ENABLE);
     update_changed_enum_param("gamma_mode", GX_ENUM_GAMMA_MODE);
     // update_changed_enum_param("saturation_mode", GX_ENUM_BALANCE_WHITE_AUTO);
   }
@@ -585,6 +585,24 @@ private:
       int64_t p_value = param.as_int();
       int64_t gx_value = 0;
       status = GXGetEnum(gx_dev_handle_, feature_id, &gx_value);
+      if (status == GX_STATUS_SUCCESS && p_value != gx_value) {
+        // RCLCPP_INFO(get_logger(),"update_changed_enum_param %s %d p %ld gx %ld", param_name.c_str(), feature_id, p_value, gx_value );
+        auto updated_param = rclcpp::Parameter(param_name, gx_value);
+        this->set_parameter(updated_param);
+      }
+    }
+  }
+
+  CAMERA_LOCAL
+  void update_changed_bool_param(std::string param_name, GX_FEATURE_ID_CMD feature_id) {
+    auto param = this->get_parameter(param_name);
+    GX_STATUS status = GX_STATUS_SUCCESS;
+    bool is_readable = false;
+    status = GXIsReadable(gx_dev_handle_, feature_id, &is_readable);
+    if (status == GX_STATUS_SUCCESS && is_readable){
+      int64_t p_value = param.as_int();
+      bool gx_value = 0;
+      status = GXGetBool(gx_dev_handle_, feature_id, &gx_value);
       if (status == GX_STATUS_SUCCESS && p_value != gx_value) {
         // RCLCPP_INFO(get_logger(),"update_changed_enum_param %s %d p %ld gx %ld", param_name.c_str(), feature_id, p_value, gx_value );
         auto updated_param = rclcpp::Parameter(param_name, gx_value);
