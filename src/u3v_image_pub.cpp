@@ -198,7 +198,7 @@ public:
     this->declare_parameter<double_t>("auto_exposure_time_max", 5000.0); //microseconds
     this->declare_parameter<int64_t>("exposure_auto", GX_EXPOSURE_AUTO_CONTINUOUS);
     this->declare_parameter<int64_t>("exposure_mode", GX_EXPOSURE_MODE_TIMED);
-    this->declare_parameter<double_t>("exposure_time", 600.0);
+    // this->declare_parameter<double_t>("exposure_time", 5000.0);
     this->declare_parameter<int64_t>("expected_gray_value", 70);
     this->declare_parameter<double_t>("current_acquisition_frame_rate",0.0);
     this->declare_parameter<double_t>("gain",0.0); // read only - gets updated periodically
@@ -402,10 +402,10 @@ private:
           parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
           result = param_gx_set_enum(GX_ENUM_EXPOSURE_MODE, parameter.as_int());
       }
-      else if (parameter.get_name() == "exposure_time" &&
-          parameter.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE) {
-          result = param_gx_set_float(GX_FLOAT_EXPOSURE_TIME, parameter.as_double());
-      }
+      // else if (parameter.get_name() == "exposure_time" &&
+      //     parameter.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE) {
+      //     result = param_gx_set_float(GX_FLOAT_EXPOSURE_TIME, parameter.as_double());
+      // }
       else if (parameter.get_name() == "exposure_auto" &&
           parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
           result = param_gx_set_enum(GX_ENUM_EXPOSURE_AUTO, parameter.as_int());
@@ -554,7 +554,7 @@ private:
     update_changed_enum_param("acquisition_mode", GX_ENUM_ACQUISITION_MODE);
     update_changed_enum_param("trigger_mode", GX_ENUM_TRIGGER_MODE);
     update_changed_enum_param("exposure_mode", GX_ENUM_EXPOSURE_MODE);
-    update_changed_float_param("exposure_time", GX_FLOAT_EXPOSURE_TIME);
+    // update_changed_float_param("exposure_time", GX_FLOAT_EXPOSURE_TIME);
     update_changed_enum_param("exposure_auto", GX_ENUM_EXPOSURE_AUTO);
     update_changed_float_param("auto_exposure_time_min", GX_FLOAT_AUTO_EXPOSURE_TIME_MIN);
     update_changed_float_param("auto_exposure_time_max", GX_FLOAT_AUTO_EXPOSURE_TIME_MAX);
