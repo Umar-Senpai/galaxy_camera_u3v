@@ -600,8 +600,8 @@ private:
     bool is_readable = false;
     status = GXIsReadable(gx_dev_handle_, feature_id, &is_readable);
     if (status == GX_STATUS_SUCCESS && is_readable){
-      int64_t p_value = param.as_int();
-      bool gx_value = 0;
+      bool p_value = param.as_bool();
+      bool gx_value = true;
       status = GXGetBool(gx_dev_handle_, feature_id, &gx_value);
       if (status == GX_STATUS_SUCCESS && p_value != gx_value) {
         // RCLCPP_INFO(get_logger(),"update_changed_enum_param %s %d p %ld gx %ld", param_name.c_str(), feature_id, p_value, gx_value );
