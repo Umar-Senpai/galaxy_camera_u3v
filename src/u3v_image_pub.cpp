@@ -603,11 +603,12 @@ private:
       bool p_value = param.as_bool();
       bool gx_value = true;
       status = GXGetBool(gx_dev_handle_, feature_id, &gx_value);
-      if (status == GX_STATUS_SUCCESS && p_value != gx_value) {
-        // RCLCPP_INFO(get_logger(),"update_changed_enum_param %s %d p %ld gx %ld", param_name.c_str(), feature_id, p_value, gx_value );
-        auto updated_param = rclcpp::Parameter(param_name, gx_value);
-        this->set_parameter(updated_param);
-      }
+      GXSetBool(gx_dev_handle_, feature_id, true)
+      // if (status == GX_STATUS_SUCCESS && p_value != gx_value) {
+      //   // RCLCPP_INFO(get_logger(),"update_changed_enum_param %s %d p %ld gx %ld", param_name.c_str(), feature_id, p_value, gx_value );
+      //   auto updated_param = rclcpp::Parameter(param_name, gx_value);
+      //   this->set_parameter(updated_param);
+      // }
     }
   }
 
