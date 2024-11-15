@@ -209,6 +209,8 @@ public:
     this->declare_parameter<int64_t>("balance_ratio_selector", GX_BALANCE_RATIO_SELECTOR_RED);
     this->declare_parameter<double_t>("balance_ratio",1.0); // read only when continuous - gets updated periodically
     this->declare_parameter<int64_t>("balance_white_auto", GX_BALANCE_WHITE_AUTO_CONTINUOUS);
+    this->declare_parameter<int64_t>("gamma_enable", true);
+    this->declare_parameter<int64_t>("gamma_mode", GX_GAMMA_SELECTOR_SRGB);
     int roi_width=3088;
     int roi_height=2064;
     this->declare_parameter<int64_t>("awb_roi_width", roi_width);
@@ -568,6 +570,9 @@ private:
     update_changed_float_param("balance_ratio", GX_FLOAT_BALANCE_RATIO);
     update_changed_enum_param("balance_white_auto", GX_ENUM_BALANCE_WHITE_AUTO);
     update_changed_enum_param("awb_lamp_house", GX_ENUM_AWB_LAMP_HOUSE);
+    update_changed_enum_param("gamma_enable", GX_BOOL_GAMMA_ENABLE);
+    update_changed_enum_param("gamma_mode", GX_ENUM_GAMMA_MODE);
+    // update_changed_enum_param("saturation_mode", GX_ENUM_BALANCE_WHITE_AUTO);
   }
 
   CAMERA_LOCAL
