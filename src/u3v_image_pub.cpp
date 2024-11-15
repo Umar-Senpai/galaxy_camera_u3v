@@ -194,32 +194,32 @@ public:
       this->declare_parameter<int64_t>("line_selector", GX_ENUM_LINE_SELECTOR_LINE3);
       this->declare_parameter<int64_t>("line_mode", GX_ENUM_LINE_MODE_INPUT);
     }
-    this->declare_parameter<double_t>("auto_exposure_time_min", 20.0); // microseconds
-    this->declare_parameter<double_t>("auto_exposure_time_max", 1000000.0); //microseconds
+    this->declare_parameter<double_t>("auto_exposure_time_min", 8.0); // microseconds
+    this->declare_parameter<double_t>("auto_exposure_time_max", 5000.0); //microseconds
     this->declare_parameter<int64_t>("exposure_auto", GX_EXPOSURE_AUTO_CONTINUOUS);
     this->declare_parameter<int64_t>("exposure_mode", GX_EXPOSURE_MODE_TIMED);
-    this->declare_parameter<double_t>("exposure_time", 100000.0);
-    this->declare_parameter<int64_t>("expected_gray_value", 50);
+    this->declare_parameter<double_t>("exposure_time", 600.0);
+    this->declare_parameter<int64_t>("expected_gray_value", 70);
     this->declare_parameter<double_t>("current_acquisition_frame_rate",0.0);
     this->declare_parameter<double_t>("gain",0.0); // read only - gets updated periodically
-    this->declare_parameter<int64_t>("gain_auto", GX_GAIN_AUTO_OFF);
+    this->declare_parameter<int64_t>("gain_auto", GX_GAIN_AUTO_CONTINUOUS);
     // this->declare_parameter<int64_t>("gain_auto", GX_GAIN_AUTO_OFF);
     this->declare_parameter<double_t>("auto_gain_min", 0.0); // dB
     this->declare_parameter<double_t>("auto_gain_max", 24.0); // dB
     this->declare_parameter<int64_t>("balance_ratio_selector", GX_BALANCE_RATIO_SELECTOR_RED);
     this->declare_parameter<double_t>("balance_ratio",1.0); // read only when continuous - gets updated periodically
-    this->declare_parameter<int64_t>("balance_white_auto", GX_BALANCE_WHITE_AUTO_ONCE);
-    int roi_width=1024;
-    int roi_height=768;
+    this->declare_parameter<int64_t>("balance_white_auto", GX_BALANCE_WHITE_AUTO_CONTINUOUS);
+    int roi_width=3088;
+    int roi_height=2064;
     this->declare_parameter<int64_t>("awb_roi_width", roi_width);
     this->declare_parameter<int64_t>("awb_roi_height", roi_height);
-    this->declare_parameter<int64_t>("awb_roi_offset_x", int16_t(2048/2 - (roi_width/2)));
-    this->declare_parameter<int64_t>("awb_roi_offset_y", int16_t(1536/2 - (roi_height/2)));
+    this->declare_parameter<int64_t>("awb_roi_offset_x", 0); // int16_t(2048/2 - (roi_width/2))
+    this->declare_parameter<int64_t>("awb_roi_offset_y", 0); // int16_t(1536/2 - (roi_height/2))
     this->declare_parameter<int64_t>("awb_lamp_house", GX_AWB_LAMP_HOUSE_ADAPTIVE);
 
     this->declare_parameter<int64_t>("acquisition_frame_rate_mode",GX_ACQUISITION_FRAME_RATE_MODE_ON);
     // this->declare_parameter<double_t>("acquisition_frame_rate", 56.0);
-    this->declare_parameter<double_t>("acquisition_frame_rate", 30.0);
+    this->declare_parameter<double_t>("acquisition_frame_rate", 10.0);
 
 
     status = GXStreamOn(gx_dev_handle_);

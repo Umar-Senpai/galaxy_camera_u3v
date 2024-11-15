@@ -23,7 +23,7 @@ def generate_launch_description():
         # {'acquisition_role': 'follower'},
         {"acquisition_frame_rate": 10.0},
         {"topic": "stereo/right"},
-        {"device_sn": "EBH24010025"},
+        {"device_sn": "FCQ24082064"},
         # {"pixel_format": 0x110000D},  # RG10
         #  {'pixel_format': 0x1080009},  # RG8
         # {"device_sn": "FDS20110008"},
