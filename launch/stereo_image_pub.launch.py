@@ -40,7 +40,7 @@ def generate_launch_description():
 
     container1 = ComposableNodeContainer(
         name="stereo_image_container",
-        namespace=namespace,
+        namespace=PythonExpression(expression=["'", namespace, "'", " + '/cam_front'"]),
         package="rclcpp_components",
         executable="component_container_mt",
         composable_node_descriptions=[
@@ -54,7 +54,9 @@ def generate_launch_description():
                 package="galaxy_camera_u3v",
                 plugin="camera::U3vImagePub",
                 name="right_image_pub",
-                namespace=namespace,
+                namespace=PythonExpression(
+                    expression=["'", namespace, "'", " + '/cam_front'"]
+                ),
                 parameters=right_params,
             )
         ],
