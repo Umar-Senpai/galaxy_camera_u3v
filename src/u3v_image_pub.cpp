@@ -235,8 +235,8 @@ public:
     this->image_buf_ = new u_char[this->payload_size_];
 
     // publishers
-    // rmw_qos_profile_t image_qos = rmw_qos_profile_sensor_data;
-    pub_ = image_transport::create_camera_publisher(this, "image_raw", qos.get_rmw_qos_profile());
+    rmw_qos_profile_t image_qos = rmw_qos_profile_sensor_data;
+    pub_ = image_transport::create_camera_publisher(this, "image_raw", image_qos);
 
     // initialise are start the timer to work out the frames per second)
     auto start_time = std::chrono::steady_clock::now();
