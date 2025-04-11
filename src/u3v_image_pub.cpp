@@ -236,7 +236,7 @@ public:
 
     // publishers
     // rmw_qos_profile_t image_qos = rmw_qos_profile_sensor_data;
-    pub_ = image_transport::create_camera_publisher(this, topic_+"/image_raw", qos.get_rmw_qos_profile());
+    pub_ = image_transport::create_camera_publisher(this, "image_raw", qos.get_rmw_qos_profile());
 
     // initialise are start the timer to work out the frames per second)
     auto start_time = std::chrono::steady_clock::now();

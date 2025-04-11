@@ -4,9 +4,15 @@ import launch
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
+from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 
 
 def generate_launch_description():
+    namespace = LaunchConfiguration("namespace")
+    declare_namespace_cmd = DeclareLaunchArgument(
+        "namespace", default_value="", description="Top-level namespace"
+    )
     """Generate launch description with multiple components."""
     left_params = [
         {"acquisition_role": "leader"},
@@ -34,7 +40,7 @@ def generate_launch_description():
 
     container1 = ComposableNodeContainer(
         name="stereo_image_container",
-        namespace="",
+        namespace=namespace,
         package="rclcpp_components",
         executable="component_container_mt",
         composable_node_descriptions=[
@@ -48,9 +54,10 @@ def generate_launch_description():
                 package="galaxy_camera_u3v",
                 plugin="camera::U3vImagePub",
                 name="right_image_pub",
+                namespace=namespace,
                 parameters=right_params,
             )
         ],
     )
 
-    return launch.LaunchDescription([container1])
+    return launch.LaunchDescription([declare_namespace_cmd, container1])
