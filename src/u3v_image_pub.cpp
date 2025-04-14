@@ -819,12 +819,12 @@ private:
       // RCLCPP_INFO(get_logger(), "last_record: %lf now_nanosec: %lf greater than: %lf",
       //     last_record,
       //     now_nanosec, (1e9 / rec_fps));
-      if ((now_nanosec - last_record) > (1e9 / rec_fps)) {
-        std::string file_path = "/ws/galaxy_video/" + timestamp_stream.str() + ".jpg";
-        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-        cv::imwrite(file_path, cv_ptr->image);
-        last_record = now_nanosec;
-      }
+      // if ((now_nanosec - last_record) > (1e9 / rec_fps)) {
+      //   std::string file_path = "/ws/galaxy_video/" + timestamp_stream.str() + ".jpg";
+      //   cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+      //   cv::imwrite(file_path, cv_ptr->image);
+      //   last_record = now_nanosec;
+      // }
       pub_.publish(*std::move(msg),camera_info_);
     }
 
